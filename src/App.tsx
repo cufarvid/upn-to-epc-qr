@@ -1,33 +1,27 @@
 import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
+import QRCode from 'react-qr-code';
+import { IDetectedBarcode, Scanner } from '@yudiel/react-qr-scanner';
 import './App.css';
+import { generateEpcQr, parseUpnQr } from './lib/qr';
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [code, setCode] = useState<string | null>(null);
+
+  const handleOnScan = (data: IDetectedBarcode[]) => {
+    const [scanResult] = data;
+    if (!scanResult || scanResult.format === 'unknown') return;
+
+    const upnQrCode = parseUpnQr(scanResult.rawValue);
+    const epcQrCode = generateEpcQr(upnQrCode);
+
+    setCode(epcQrCode);
+  };
 
   return (
     <>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        {!code ? <Scanner onScan={handleOnScan} /> : <QRCode value={code} />}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   );
 }
