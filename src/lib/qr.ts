@@ -28,6 +28,9 @@ type UpnQrData = {
 export const parseUpnQr = (qrString: string): UpnQrData => {
   const lines = qrString.trim().split('\n');
 
+  if (lines.length < 20) throw new Error('Invalid UPN QR code');
+  if (lines[0] !== 'UPNQR') throw new Error('Invalid UPN QR format');
+
   // Validate control sum
   const expectedSum = lines
     .slice(0, 19)
