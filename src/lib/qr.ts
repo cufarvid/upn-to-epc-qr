@@ -21,6 +21,21 @@ type UpnQrData = {
   controlSum: number;
 };
 
+export type EpcQrData = {
+  serviceTag: 'BCD';
+  version: '002';
+  encoding: '2';
+  identification: 'SCT';
+  bic: string;
+  recipient: string;
+  iban: string;
+  amount: `EUR${string}`;
+  purposeCode: string;
+  reference: string;
+  text: string;
+  info: string;
+};
+
 /**
  * Parse UPN QR code string into structured data
  * @param qrString Raw QR code data
@@ -110,10 +125,10 @@ const validateEpcQrInput = (data: UpnQrData) => {
 };
 
 /**
- * Generate EPC QR code string from UPN QR data
+ * Generate EPC QR data from UPN QR data
  * @param data UPN QR data
  */
-export const generateEpcQr = (data: UpnQrData): string => {
+export const generateEpcQr = (data: UpnQrData): EpcQrData => {
   const validationErrors = validateEpcQrInput(data);
   if (validationErrors.length > 0) {
     throw new Error(`Validation errors: ${validationErrors.join(', ')}`);
@@ -121,7 +136,7 @@ export const generateEpcQr = (data: UpnQrData): string => {
 
   const serviceTag = 'BCD';
   const version = '002';
-  const encoding = '1';
+  const encoding = '2';
   const identification = 'SCT';
   const bic = '';
   const recipient = data.recipient.name.toUpperCase().substring(0, 70);
@@ -132,7 +147,7 @@ export const generateEpcQr = (data: UpnQrData): string => {
   const text = (data.payment.description || '').substring(0, 140);
   const info = '';
 
-  const epcQRString = [
+  return {
     serviceTag,
     version,
     encoding,
@@ -140,12 +155,31 @@ export const generateEpcQr = (data: UpnQrData): string => {
     bic,
     recipient,
     iban,
-    `EUR${amount}`,
+    amount: `EUR${amount}`,
     purposeCode,
     reference,
     text,
     info,
-  ].join('\n');
+  };
+};
 
-  return epcQRString;
+/**
+ * Generate EPC QR code string from EPC QR data
+ * @param data EPC QR data
+ */
+export const generateEpcQrString = (data: EpcQrData): string => {
+  return [
+    data.serviceTag,
+    data.version,
+    data.encoding,
+    data.identification,
+    data.bic,
+    data.recipient,
+    data.iban,
+    data.amount,
+    data.purposeCode,
+    data.reference,
+    data.text,
+    data.info,
+  ].join('\n');
 };
